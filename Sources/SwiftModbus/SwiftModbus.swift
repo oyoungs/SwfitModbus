@@ -1,10 +1,52 @@
 #if os(macOS) 
-import Darwin
+import Darwin.C
 #else 
 import Glibc
 #endif
+
 import CModbus
 
+
+func modbus_get_response_timeout_seconds(_ ctx: OpaquePointer!) -> Double {
+    let sec = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+    let usec = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+    guard modbus_get_response_timeout(ctx, sec, usec) > 0 else {
+        return 0
+    }
+    return Double(sec.pointee) + Double(usec.pointee) * 0.000001
+}
+
+func modbus_get_byte_timeout_seconds(_ ctx: OpaquePointer!) -> Double {
+    let sec = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+    let usec = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+    guard modbus_get_byte_timeout(ctx, sec, usec) > 0 else {
+        return 0
+    }
+    return Double(sec.pointee) + Double(usec.pointee) * 0.000001
+}
+
+func modbus_set_response_timeout_seconds(_ ctx: OpaquePointer!, _ timeout: Double) -> Bool {
+    let sec = UInt32(Int(timeout))
+    let usec = UInt32(Int(timeout))
+    
+    guard modbus_set_response_timeout(ctx, sec, usec) > 0 else {
+        return false
+    }
+    
+    return true
+}
+
+
+func modbus_set_byte_timeout_seconds(_ ctx: OpaquePointer!, _ timeout: Double) -> Bool {
+    let sec = UInt32(Int(timeout))
+    let usec = UInt32(Int(timeout))
+    
+    guard modbus_set_byte_timeout(ctx, sec, usec) > 0 else {
+        return false
+    }
+    
+    return true
+}
 
 public class Version {
 
@@ -21,7 +63,7 @@ public class Version {
     }
 
     public static var string: String {
-        return String(cString: CModbus.CModbus_Version()!)
+        return CModbus.LIBMODBUS_VERSION_STRING
     }
 
 }
@@ -147,7 +189,7 @@ public class Modbus {
 
         }
         set {
-            modbus_set_response_timeout_seconds(context, newValue)
+            _ = modbus_set_response_timeout_seconds(context, newValue)
         }
     }
 
@@ -157,7 +199,7 @@ public class Modbus {
         }
 
         set {
-            modbus_set_byte_timeout_seconds(context, newValue)
+            _ = modbus_set_byte_timeout_seconds(context, newValue)
         }
     }
 
@@ -264,7 +306,7 @@ public class Modbus {
     }
 
     public func writeRegister(address: Int, value: UInt16) throws {
-        guard modbus_write_register(context, Int32(address), Int32(value)) > 0 else {
+        guard modbus_write_register(context, Int32(address), value) > 0 else {
             throw ModbusError.fromErrno
         }
     }

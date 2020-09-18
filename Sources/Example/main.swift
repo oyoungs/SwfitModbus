@@ -1,10 +1,7 @@
 import SwiftModbus
 
 
-
-
-
-let modbus = ModbusTCP(ipAddress: "127.0.0.1", port: 5002)
+let modbus = ModbusTCP(ipAddress: "172.19.3.167", port: 5002)
 
 
 modbus.byteTimeout = 1
@@ -14,8 +11,6 @@ modbus.responseTimeout = 1
 do {
   try modbus.set(slave: 1)
   try modbus.connect()
-
-  
 
   var bits: [UInt8 ] = [0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
   

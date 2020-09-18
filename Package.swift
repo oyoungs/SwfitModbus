@@ -11,7 +11,7 @@ let package = Package(
             name: "CModbus",
             targets: ["CModbus"]),
         .library(
-            name: "Modbus",
+            name: "SwiftModbus",
             targets: ["SwiftModbus"]),
         .executable(
             name: "Example",
@@ -24,9 +24,14 @@ let package = Package(
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
-        .target(
+        .systemLibrary(
             name: "CModbus",
-            dependencies: []),
+            pkgConfig: "libmodbus",
+            providers: [
+                .brew(["libmodbus"]),
+                .apt(["libmodbus-dev"])
+            ]
+        ),
         .target(
             name: "SwiftModbus",
             dependencies: ["CModbus"]),
