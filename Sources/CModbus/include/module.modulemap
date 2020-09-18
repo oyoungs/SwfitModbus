@@ -1,0 +1,5 @@
+module CModbus {
+  header "shim.h"
+  link "modbus"
+  export *
+}
