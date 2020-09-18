@@ -1,3 +1,4 @@
-# SwiftModbus
+# SwfitModbus
 
-A description of this package.
+Swift modbus library for libmodbus
+
