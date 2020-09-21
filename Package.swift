@@ -11,8 +11,8 @@ let package = Package(
             name: "CModbus",
             targets: ["CModbus"]),
         .library(
-            name: "SwiftModbus",
-            targets: ["SwiftModbus"]),
+            name: "Modbus",
+            targets: ["Modbus"]),
         .executable(
             name: "Example",
             targets: ["Example"]),
@@ -33,13 +33,13 @@ let package = Package(
             ]
         ),
         .target(
-            name: "SwiftModbus",
+            name: "Modbus",
             dependencies: ["CModbus"]),
         .target(
             name: "Example",
-            dependencies: ["SwiftModbus"]),
+            dependencies: ["Modbus"]),
         .testTarget(
             name: "SwiftModbusTests",
-            dependencies: ["SwiftModbus"]),
+            dependencies: ["Modbus"]),
     ]
 )

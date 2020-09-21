@@ -27,7 +27,7 @@ func modbus_get_byte_timeout_seconds(_ ctx: OpaquePointer!) -> Double {
 
 func modbus_set_response_timeout_seconds(_ ctx: OpaquePointer!, _ timeout: Double) -> Bool {
     let sec = UInt32(Int(timeout))
-    let usec = UInt32(Int(timeout))
+    let usec = UInt32((timeout - Double(sec)) * 1000000)
     
     guard modbus_set_response_timeout(ctx, sec, usec) > 0 else {
         return false
@@ -39,8 +39,8 @@ func modbus_set_response_timeout_seconds(_ ctx: OpaquePointer!, _ timeout: Doubl
 
 func modbus_set_byte_timeout_seconds(_ ctx: OpaquePointer!, _ timeout: Double) -> Bool {
     let sec = UInt32(Int(timeout))
-    let usec = UInt32(Int(timeout))
-    
+    let usec = UInt32((timeout - Double(sec)) * 1000000)
+
     guard modbus_set_byte_timeout(ctx, sec, usec) > 0 else {
         return false
     }

@@ -1,4 +1,4 @@
-import SwiftModbus
+import Modbus
 
 
 let modbus = ModbusTCP(ipAddress: "172.19.3.167", port: 5002)
@@ -12,7 +12,7 @@ do {
   try modbus.set(slave: 1)
   try modbus.connect()
 
-  var bits: [UInt8 ] = [0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+  var bits: [UInt8] = [0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
   
   print("写线圈状态:", bits)
 
