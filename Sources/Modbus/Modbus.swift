@@ -472,5 +472,67 @@ public class ModbusTCP: Modbus {
 
         return Int(socket)
     }
+}
+
+
+extension Array where Element == UInt8 {
+    mutating func setBitsFromByte(index: Int, byte: UInt8) {
+        let buffer = withUnsafeMutableBufferPointer { $0.baseAddress }
+        modbus_set_bits_from_byte(buffer!, Int32(index), byte)
+    }
+    
+    mutating func setBitsFromByte(index: Int, bytes: [UInt8]) {
+        let buffer = withUnsafeMutableBufferPointer { $0.baseAddress }
+        let bytesBuffer = bytes.withUnsafeBufferPointer {$0.baseAddress}
+        modbus_set_bits_from_bytes(buffer!, Int32(index), UInt32(bytes.count), bytesBuffer!)
+    }
+    
+    func getByteFromBits(index: Int, count: UInt32) -> UInt8 {
+        let buffer = withUnsafeBufferPointer {$0.baseAddress }
+        return modbus_get_byte_from_bits(buffer!, Int32(index), count)
+    }
+}
+
+extension Array where Element == UInt16 {
+    
+    enum FloatMode {
+        case normal
+        case abcd
+        case dcba
+        case badc
+        case cdab
+    }
+    
+    func float(start: Int, mode: FloatMode = .normal) -> Float {
+        let buffer = withUnsafeBufferPointer {$0.baseAddress?.advanced(by: start)}
+        switch mode {
+        case .normal:
+            return modbus_get_float(buffer!)
+        case .abcd:
+            return modbus_get_float_abcd(buffer!)
+        case .dcba:
+            return modbus_get_float_dcba(buffer!)
+        case .badc:
+            return modbus_get_float_badc(buffer!)
+        case .cdab:
+            return modbus_get_float_cdab(buffer!)
+        }
+    }
+    
+    mutating func setFloat(start: Int, value: Float, mode: FloatMode = .normal) {
+        let buffer = withUnsafeMutableBufferPointer {$0.baseAddress?.advanced(by: start)}
+        switch mode {
+        case .normal:
+            return modbus_set_float(value, buffer!)
+        case .abcd:
+            return modbus_set_float_abcd(value, buffer!)
+        case .dcba:
+            return modbus_set_float_dcba(value, buffer!)
+        case .badc:
+            return modbus_set_float_badc(value, buffer!)
+        case .cdab:
+            return modbus_set_float_cdab(value, buffer!)
+        }
+    }
     
 }
