@@ -1,6 +1,6 @@
 import XCTest
 
-import SwiftModbusTests
+import ModbusTests
 
 var tests = [XCTestCaseEntry]()
 tests += ModbusTests.allTests()
