@@ -51,19 +51,19 @@ func modbus_set_byte_timeout_seconds(_ ctx: OpaquePointer!, _ timeout: Double) -
 public class Version {
 
     public static var major: UInt32 {
-        return CModbus.libmodbus_version_major
+        return libmodbus_version_major
     }
 
     public static var minor: UInt32 {
-        return CModbus.libmodbus_version_minor
+        return libmodbus_version_minor
     }
 
     public static var micro: UInt32 {
-        return CModbus.libmodbus_version_micro
+        return libmodbus_version_micro
     }
 
     public static var string: String {
-        return CModbus.LIBMODBUS_VERSION_STRING
+        return LIBMODBUS_VERSION_STRING
     }
 
 }
@@ -143,7 +143,34 @@ public enum ModbusErrorRecoveryMode {
     }
 }
 
+public typealias ModbusMappingHandle = UnsafeMutablePointer<modbus_mapping_t>
+
 public typealias ModbusContext = OpaquePointer
+
+public class ModbusMapping {
+    
+    public let context: ModbusMappingHandle
+    
+    public typealias Address = (start: UInt32, count: UInt32)
+    
+    init(bits: Address, inputBits: Address, registers: Address, inputRegisters: Address) {
+        context =  modbus_mapping_new_start_address(
+            bits.start, bits.count,
+            inputBits.start, inputBits.count,
+            registers.start, registers.count,
+            inputRegisters.start, inputRegisters.count
+        )
+    }
+    
+    init(bits: Int32, inputBits: Int32, registers: Int32, inputRegisters: Int32) {
+        context =  modbus_mapping_new(bits, inputBits, registers, inputRegisters )
+    }
+    
+    deinit {
+        modbus_mapping_free(context)
+    }
+    
+}
 
 
 public class Modbus {
@@ -214,6 +241,57 @@ public class Modbus {
        guard modbus_flush(context) == 0 else {
           throw ModbusError.fromErrno
        }
+    }
+    
+    func sendRawRequest(request: [UInt8]) throws {
+        let buffer = request.withUnsafeBufferPointer { $0.baseAddress }
+        
+        guard modbus_send_raw_request(context, buffer!, Int32(request.count)) >= 0 else {
+            throw ModbusError.fromErrno
+        }
+    }
+    
+    func receive(count: Int) throws -> [UInt8] {
+        var buffer = [UInt8](repeating: 0, count: count)
+        let bufferPointer = buffer.withUnsafeMutableBufferPointer { $0.baseAddress }
+        
+        let n = modbus_receive(context, bufferPointer)
+        
+        guard n >= 0 else {
+            throw ModbusError.fromErrno
+        }
+        
+        return count == Int(n) ? buffer: [UInt8](buffer.dropLast(count - Int(n)))
+    }
+    
+    func receive(confirmation count: Int) throws -> [UInt8] {
+        var buffer = [UInt8](repeating: 0, count: count)
+        let bufferPointer = buffer.withUnsafeMutableBufferPointer { $0.baseAddress }
+        
+        let n = modbus_receive(context, bufferPointer)
+        
+        guard n >= 0 else {
+            throw ModbusError.fromErrno
+        }
+        
+        return count == Int(n) ? buffer: [UInt8](buffer.dropLast(count - Int(n)))
+    }
+    
+    func reply(reqeust: [UInt8], mapping: ModbusMapping)  throws {
+        let req = reqeust.withUnsafeBufferPointer {$0.baseAddress}
+        
+        guard modbus_reply(context, req!, Int32(reqeust.count), mapping.context) >= 0 else {
+            throw ModbusError.fromErrno
+        }
+    }
+    
+    
+    func reply(reqeust: [UInt8], code: UInt32)  throws {
+        let req = reqeust.withUnsafeBufferPointer {$0.baseAddress}
+        
+        guard modbus_reply_exception(context, req!, code) >= 0 else {
+            throw ModbusError.fromErrno
+        }
     }
 
     public var debug: Bool {
@@ -394,4 +472,5 @@ public class ModbusTCP: Modbus {
 
         return Int(socket)
     }
+    
 }
