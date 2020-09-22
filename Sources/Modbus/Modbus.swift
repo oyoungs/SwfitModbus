@@ -145,9 +145,6 @@ public enum ModbusErrorRecoveryMode {
 
 public typealias ModbusContext = OpaquePointer
 
-public protocol ModbusCreator {
-    func create() -> ModbusContext
-}
 
 public class Modbus {
 
@@ -167,7 +164,7 @@ public class Modbus {
         }
     }
 
-    public func setErrorRecoveryMode(mode: ModbusErrorRecoveryMode) throws {
+    public func set(errorRecoveryMode mode: ModbusErrorRecoveryMode) throws {
         guard modbus_set_error_recovery(context, mode.mode) == 0 else {
             throw ModbusError.fromErrno
         }
